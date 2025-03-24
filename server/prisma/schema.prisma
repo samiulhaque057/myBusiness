@@ -1,0 +1,279 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// user role
+enum Role {
+  ADMIN
+  MODERATOR
+}
+
+// gray model 
+model Gray {
+  id           Int           @id @default(autoincrement())
+  name         String
+  address      String
+  phone        String        @unique
+  products     Product[]
+  chalans      GrayChalan[]
+  grayPayments GrayPayment[]
+  createAt     DateTime      @default(now())
+  updateAt     DateTime      @updatedAt
+}
+
+// gray chalan model
+model GrayChalan {
+  id         Int           @id @default(autoincrement())
+  products   Product[]
+  grayId     Int
+  gray       Gray          @relation(fields: [grayId], references: [id])
+  payments   GrayPayment[]
+  date       String
+  markedPaid Boolean       @default(false)
+  discount   Float?
+  createAt   DateTime      @default(now())
+  updateAt   DateTime      @updatedAt
+}
+
+// dyeing chalan model
+model DyeingChalan {
+  id         Int             @id @default(autoincrement())
+  products   Product[]
+  dyeingId   Int
+  dyeing     Dyeing          @relation(fields: [dyeingId], references: [id])
+  payments   DyeingPayment[]
+  date       String
+  markedPaid Boolean         @default(false)
+  discount   Float?
+  createAt   DateTime        @default(now())
+  updateAt   DateTime        @updatedAt
+}
+
+// dyeing model
+model Dyeing {
+  id             Int             @id @default(autoincrement())
+  name           String
+  address        String
+  phone          String          @unique
+  products       Product[]
+  dyeingPayments DyeingPayment[]
+  chalans        DyeingChalan[]
+  createAt       DateTime        @default(now())
+  updateAt       DateTime        @updatedAt
+}
+
+// gray payment model
+model GrayPayment {
+  id       Int         @id @default(autoincrement())
+  date     String
+  amount   Float
+  gray     Gray        @relation(fields: [grayId], references: [id])
+  grayId   Int
+  Chalan   GrayChalan? @relation(fields: [chalanId], references: [id])
+  chalanId Int?
+  createAt DateTime    @default(now())
+  updateAt DateTime    @updatedAt
+}
+
+// controller user model 
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String?
+  password String
+  gender   String?
+  phone    String?
+  role     Role     @default(MODERATOR)
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+// delivery status enum
+enum DELIVERY_STATUS {
+  IN_MILL
+  IN_HOUSE
+  RUNNING
+}
+
+// dyeing payment model
+model DyeingPayment {
+  id       Int           @id @default(autoincrement())
+  date     String
+  amount   Float
+  dyeing   Dyeing        @relation(fields: [dyeingId], references: [id])
+  dyeingId Int
+  chalan   DyeingChalan? @relation(fields: [chalanId], references: [id])
+  chalanId Int?
+  createAt DateTime      @default(now())
+  updateAt DateTime      @updatedAt
+}
+
+// product model
+model Product {
+  id                Int               @id @default(autoincrement())
+  name              String
+  //  gray details
+  gray              Gray              @relation(fields: [grayId], references: [id])
+  grayId            Int
+  gray_amount       Float
+  gray_rate         Float
+  gray_date         String?
+  // dyeing details
+  dyeing            Dyeing?           @relation(fields: [dyeingId], references: [id])
+  dyeingId          Int?
+  dyeing_date       String?
+  dyeing_rate       Float?
+  dyeing_amount     Float?
+  //finished product
+  finished_products FinishedProduct[]
+  // dellvery status
+  delivery_status   DELIVERY_STATUS?
+  // customers
+  customers         CustomerProduct[]
+  // chalan details
+  dyeingChalan      DyeingChalan?     @relation(fields: [dyeingChalanId], references: [id])
+  dyeingChalanId    Int?
+  grayChalan        GrayChalan?       @relation(fields: [grayChalanId], references: [id])
+  grayChalanId      Int?
+  total_defected    Float?
+  CustomerChalan    CustomerChalan?   @relation(fields: [customerChalanId], references: [id])
+  customerChalanId  Int?
+
+  // rate
+  due_ask_rate   Float?
+  due_sell_rate  Float?
+  cash_ask_rate  Float?
+  cash_sell_rate Float?
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+// model finished product
+model FinishedProduct {
+  id                Int              @id @default(autoincrement())
+  amount            Float
+  color             String?
+  colorCode         String?
+  design            String?
+  product           Product          @relation(fields: [productId], references: [id])
+  productId         Int
+  is_sold           Boolean          @default(false)
+  customerProduct   CustomerProduct? @relation(fields: [customerProductId], references: [id])
+  customerProductId Int?
+  createAt          DateTime         @default(now())
+  updateAt          DateTime         @updatedAt
+}
+
+// customer model
+model Customer {
+  id               Int               @id @default(autoincrement())
+  name             String
+  address          String
+  phone            String            @unique
+  products         CustomerProduct[]
+  chalans          CustomerChalan[]
+  customerPayments CustomerPayment[]
+  createAt         DateTime          @default(now())
+  updateAt         DateTime          @updatedAt
+  CustomerCheck    CustomerCheck[]
+  previousDue      Float             @default(0)
+}
+
+// customer chalan
+model CustomerChalan {
+  id                    Int               @id @default(autoincrement())
+  products              Product[]
+  customerId            Int
+  customer              Customer          @relation(fields: [customerId], references: [id])
+  payments              CustomerPayment[]
+  paymentWithPurchaseId Int?
+  date                  String
+  markedPaid            Boolean           @default(false)
+  discount              Float?
+  customerProducts      CustomerProduct[]
+  createAt              DateTime          @default(now())
+  updateAt              DateTime          @updatedAt
+}
+
+// customer sell product model
+model CustomerProduct {
+  id               Int               @id @default(autoincrement())
+  customer         Customer          @relation(fields: [customerId], references: [id])
+  customerId       Int
+  product          Product           @relation(fields: [productId], references: [id])
+  productId        Int
+  chalanId         Int
+  chalan           CustomerChalan    @relation(fields: [chalanId], references: [id])
+  product_rate     Float
+  finishedProducts FinishedProduct[]
+  createAt         DateTime          @default(now())
+  updateAt         DateTime          @updatedAt
+}
+
+// customer payment model 
+model CustomerPayment {
+  id                Int             @id @default(autoincrement())
+  date              String
+  amount            Float
+  customerId        Int
+  customer          Customer        @relation(fields: [customerId], references: [id])
+  CustomerChalan    CustomerChalan? @relation(fields: [customerChalanId], references: [id])
+  customerChalanId  Int?
+  isPreviousPayment Boolean         @default(false)
+  createAt          DateTime        @default(now())
+  updateAt          DateTime        @updatedAt
+}
+
+// daily cash
+model DailyCash {
+  id         Int               @id @default(autoincrement())
+  previous   Float
+  cashIn     CashIn[]
+  date       String            @unique
+  othersCost DailyOthersCost[]
+  createAt   DateTime          @default(now())
+  updateAt   DateTime          @updatedAt
+}
+
+// model cash in
+
+model CashIn {
+  id          Int        @id @default(autoincrement())
+  amount      Float
+  date        String
+  createAt    DateTime   @default(now())
+  updateAt    DateTime   @updatedAt
+  DailyCash   DailyCash? @relation(fields: [dailyCashId], references: [id])
+  dailyCashId Int?
+}
+
+// daily other cost
+model DailyOthersCost {
+  id          Int        @id @default(autoincrement())
+  name        String
+  amount      Float
+  date        String
+  createAt    DateTime   @default(now())
+  updateAt    DateTime   @updatedAt
+  DailyCash   DailyCash? @relation(fields: [dailyCashId], references: [id])
+  dailyCashId Int?
+}
+
+// customer check
+model CustomerCheck {
+  id         Int      @id @default(autoincrement())
+  amount     Float
+  date       String
+  bank       String
+  customerId Int
+  status     Boolean  @default(false)
+  customer   Customer @relation(fields: [customerId], references: [id])
+  createAt   DateTime @default(now())
+  updateAt   DateTime @updatedAt
+}

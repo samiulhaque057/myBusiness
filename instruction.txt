@@ -1,0 +1,22 @@
+For First Time Setup:
+---------------------
+1. npm i or npm install or npm run install
+
+
+
+For Development:
+---------------
+1. npm run dev
+
+
+
+For Production:
+---------------
+1. npm run build
+2. npm start or npm run start
+
+
+
+For Server Stop:
+----------------
+1. Ctrl + C

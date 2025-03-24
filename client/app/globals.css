@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-bangla {
+  font-family: var(--font-siliguri);
+}
+
+:root {
+  scrollbar-width: 0;
+  scrollbar-color: transparent transparent;
+}

@@ -1,0 +1,23 @@
+{
+  "name": "setup",
+  "version": "1.0.0",
+  "scripts": {
+    "client-install": "cd client && npm install",
+    "server-install": "cd server && npm install",
+    "client-start": "cd client && npm run start",
+    "client-build": "cd client && npm run build",
+    "client-dev": "cd client && npm run dev",
+    "server-start": "cd server && node dist/server.js",
+    "server-build": "cd server && npm run build",
+    "server-dev": "cd server && npm run dev",
+    "dev": "concurrently \"npm run client-dev\" \"npm run server-dev\"",
+    "build": "concurrently \"npm run client-build\" \"npm run server-build\"",
+    "start": "concurrently \"npm run client-start\" \"npm run server-start\"",
+    "install": "concurrently \"npm run client-install\" \"npm run server-install\""
+  },
+  "keywords": [],
+  "description": "",
+  "dependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
